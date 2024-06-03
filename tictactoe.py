@@ -1,5 +1,6 @@
 import sys
 import pygame
+import random
 import numpy as np
 
 from constants import*
@@ -54,20 +55,43 @@ class Board:
             for col in range(COLS):
                 if self.empty_sqr(row, col):
                     empty_sqrs.append((row, col))
+        return empty_sqrs
     
     def isfull(self):
-        return self.marked_sqrsr == 9
+        return self.marked_sqrs == 9
     
     def isempty(self):
         return self.marked_sqrs == 0
     
-
+class AI:
+    #level=0 - random move, level=1 , MINMAX
+    def __init__(self, level=0, player=2):
+        self.level = level
+        self.player = player
+        
+    def rnd(self, board):
+        empty_sqrs = board.get_empty_sqrs()   
+        idx = random.randrange(0, len(empty_sqrs)) 
+        
+        return empty_sqrs[idx] #(row, col)
+            
+    
+    def eval(self, main_board):
+        if self.level == 0:
+            #random choice
+            move = self.rnd(main_board)
+        else:
+            #minmax choice
+            pass
+        
+        return move #row, col
+           
 class Game:
     def __init__(self):
         self.board = Board()
-        #self.player = AI()
+        self.ai = AI()
         self.player = 1 #1-cross, 2-circle
-        self.gamemode = 'pvp' 
+        self.gamemode = 'ai' 
         self.running = True
         self.show_lines()
 
@@ -102,6 +126,9 @@ def main():
     #object
     game = Game()
     board = game.board
+    ai = game.ai
+    
+    # ai = AI()
 
     while True:
         for event in pygame.event.get():
@@ -121,6 +148,17 @@ def main():
                     # print(board.squares)
                     game.draw_fig(row, col)
                     game.next_turn()
-
+                    
+        if game.gamemode == 'ai' and game.player == ai.player:
+            #update the screen
+            pygame.display.update()
+            
+            #ai method
+            row, col = ai.eval(board)
+            board.mark_sqr(row, col, game.player)
+            game.draw_fig(row, col)
+            game.next_turn()
+            
+            
         pygame.display.update()
 main()
